@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoría Mercado Libre PRO</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+  <div class="card shadow p-4">
+
+    <h2 class="text-center mb-4">📊 Auditoría Mercado Libre PRO</h2>
+
+    <!-- FORM -->
+    <form id="formUpload">
+      <div class="mb-3">
+        <label class="form-label">Subir Excel (SKU, price, description)</label>
+        <input type="file" id="fileInput" class="form-control" accept=".xlsx,.xls" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">
+        🚀 Auditar productos
+      </button>
+    </form>
+
+    <!-- LOADING -->
+    <div id="loading" class="text-center mt-3 d-none">
+      <div class="spinner-border text-primary"></div>
+      <p>Analizando productos en Mercado Libre...</p>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div id="resultado" class="mt-4"></div>
+
+  </div>
+</div>
+
+<script>
+const form = document.getElementById("formUpload");
+const fileInput = document.getElementById("fileInput");
+const loading = document.getElementById("loading");
+const resultado = document.getElementById("resultado");
+
+// 🔥 Detecta si usar /api o no (sin romper nada)
+const API_URL = "/auditar"; // puedes cambiar a "/api/auditar" después
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (!fileInput.files.length) {
+    alert("Selecciona un archivo Excel");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", fileInput.files[0]);
+
+  loading.classList.remove("d-none");
+  resultado.innerHTML = "";
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: formData
+    });
+
+    // 🔥 Manejo de error HTTP
+    if (!res.ok) {
+      throw new Error("Error en el servidor");
+    }
+
+    const data = await res.json();
+
+    loading.classList.add("d-none");
+
+    if (!data.ok) {
+      resultado.innerHTML = `
+        <div class="alert alert-danger">
+          Error procesando archivo
+        </div>
+      `;
+      return;
+    }
+
+    if (!data.resultados || data.resultados.length === 0) {
+      resultado.innerHTML = `
+        <div class="alert alert-warning">
+          No hay resultados para mostrar
+        </div>
+      `;
+      return;
+    }
+
+    let html = `
+      <div class="mb-3">
+        <strong>Total analizados:</strong> ${data.resultados.length}
+      </div>
+
+      <div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>SKU Excel</th>
+            <th>SKU ML</th>
+            <th>Precio Excel</th>
+            <th>Precio ML</th>
+            <th>Descripción Excel</th>
+            <th>Descripción ML</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    data.resultados.forEach(item => {
+      const tieneError = item.error;
+
+      html += `
+        <tr class="${tieneError ? 'table-danger' : 'table-success'}">
+
+          <td>${item.id ?? '-'}</td>
+
+          <td>${item.sku_excel ?? '-'}</td>
+          <td>${item.sku_ml ?? '-'}</td>
+
+          <td>${item.price_excel ?? '-'}</td>
+          <td>${item.price_ml ?? '-'}</td>
+
+          <td title="${item.desc_excel ?? ''}">
+            ${(item.desc_excel ?? '-').substring(0, 30)}...
+          </td>
+
+          <td title="${item.desc_ml ?? ''}">
+            ${(item.desc_ml ?? '-').substring(0, 30)}...
+          </td>
+
+          <td>
+            ${tieneError ? '❌ Diferencias' : '✔ OK'}
+          </td>
+
+        </tr>
+      `;
+    });
+
+    html += "</tbody></table></div>";
+
+    resultado.innerHTML = html;
+
+  } catch (error) {
+    console.error(error);
+    loading.classList.add("d-none");
+
+    resultado.innerHTML = `
+      <div class="alert alert-danger">
+        Error conectando con el servidor
+      </div>
+    `;
+  }
+});
+</script>
+
+</body>
+</html>

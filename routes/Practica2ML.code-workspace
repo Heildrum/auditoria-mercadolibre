@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "Practica2ML",
+			"path": "../.."
+		},
+		{
+			"name": "Back",
+			"path": "../../../Back"
+		}
+	],
+	"settings": {}
+}
