@@ -16,4 +16,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC"
+  "dotenv": "^16.4.5"
 }
