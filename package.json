@@ -1,11 +1,5 @@
+
 {
-  "dependencies": {
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "multer": "^2.1.1",
-    "node-fetch": "^3.3.2",
-    "xlsx": "^0.18.5"
-  },
   "name": "practica2ml",
   "version": "1.0.0",
   "description": "",
@@ -15,6 +9,14 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
-  "dotenv": "^16.4.5"
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "node-fetch": "^3.3.2",
+    "xlsx": "^0.18.5",
+    "dotenv": "^16.4.5"
+    }
 }
+
