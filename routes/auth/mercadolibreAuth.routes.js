@@ -1,6 +1,5 @@
 
 const express = require("express");
-const fetch = require("node-fetch");
 
 const router = express.Router();
 
@@ -29,7 +28,7 @@ router.get("/mercadolibre/callback", async (req, res) => {
           grant_type: "authorization_code",
           client_id: process.env.CLIENT_ID,
           client_secret: process.env.CLIENT_SECRET,
-          code: code,
+          code,
           redirect_uri:
             "https://auditoria-mercadolibre-4.onrender.com/auth/mercadolibre/callback"
         })
@@ -68,5 +67,9 @@ router.get("/mercadolibre/callback", async (req, res) => {
 });
 
 module.exports = router;
+
+
+
+
 
 
