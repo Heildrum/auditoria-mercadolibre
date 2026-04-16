@@ -9,6 +9,10 @@ const fs = require("fs");
 const cors = require("cors");
 const path = require("path");
 
+app.get("/__probe__", (req, res) => {
+  res.send("PROBE OK ✅");
+});
+
 // Node 18+ / Render: fetch nativo
 // no se necesita node-fetch
 
