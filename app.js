@@ -1,4 +1,5 @@
 
+
 require("dotenv").config();
 
 const express = require("express");
@@ -8,48 +9,57 @@ const fs = require("fs");
 const cors = require("cors");
 const path = require("path");
 
-// fetch Node 22
-const fetch = (...args) =>
-  import("node-fetch").then(({ default: fetch }) => fetch(...args));
+// Node 18+ / Render: fetch nativo
+// no se necesita node-fetch
 
 // ================================
 // 🔥 IMPORTAR RUTAS
 // ================================
 const auditoriasRoutes = require("./routes/auditoria.routes");
 const mercadolibreRoutes = require("./routes/mercadolibre.routes");
-
 const authMercadoLibreRoutes =
   require("./routes/auth/mercadolibreAuth.routes");
 
 const app = express();
 
+// ================================
+// MIDDLEWARE BASICO
+// ================================
 app.use(cors());
 app.use(express.json());
 
 // ================================
-// FRONTEND
+// FRONTEND (INDEX.HTML)
 // ================================
-const PUBLIC_PATH = path.resolve(__dirname, "../public");
+// ✅ public/ está en la MISMA carpeta que app.js
+const PUBLIC_PATH = path.join(__dirname, "public");
+
+// Servir archivos estáticos
 app.use(express.static(PUBLIC_PATH));
 
+// Forzar ruta raíz (evita "extraviado")
 app.get("/", (req, res) => {
   res.sendFile(path.join(PUBLIC_PATH, "index.html"));
 });
 
 // ================================
-// RUTAS MODULARES
+// RUTAS MODULARES API
 // ================================
 app.use("/auditoria", auditoriasRoutes);
 app.use("/mercadolibre", mercadolibreRoutes);
 app.use("/auth", authMercadoLibreRoutes);
+
 // ================================
 // MULTER (UPLOAD)
 // ================================
 const upload = multer({ dest: "uploads/" });
 
 // ================================
-// TOKEN
+// ⚠️ TOKEN (TEMPORAL)
 // ================================
+// NOTA IMPORTANTE:
+// - Esto funciona solo para pruebas
+// - En producción debes usar el token DEL CLIENTE
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 
 // ================================
@@ -78,7 +88,7 @@ const procesarAuditoria = async (filePath) => {
     try {
       const itemId = item.id;
       if (!itemId) continue;
-//aqui va el token
+
       const response = await fetch(
         `https://api.mercadolibre.com/items/${itemId}`,
         {
@@ -102,9 +112,9 @@ const procesarAuditoria = async (filePath) => {
       const descExcel = limpiarTexto(descExcelRaw);
       const descML = limpiarTexto(descMLRaw);
 
-      const errorSKU = skuExcel != skuML;
+      const errorSKU = skuExcel !== skuML;
       const errorPrice = Math.abs(priceExcel - priceML) > 0;
-      const errorDesc = descExcel != descML;
+      const errorDesc = descExcel !== descML;
 
       resultados.push({
         id: itemId,
@@ -133,12 +143,15 @@ const procesarAuditoria = async (filePath) => {
 };
 
 // ================================
-// 🔥 RUTA FRONT (USADA POR INDEX)
+// RUTA FRONT (FORM HTML)
 // ================================
 app.post("/auditar", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ ok: false, message: "Sin archivo" });
+      return res.status(400).json({
+        ok: false,
+        message: "Sin archivo"
+      });
     }
 
     const resultados = await procesarAuditoria(req.file.path);
@@ -147,21 +160,24 @@ app.post("/auditar", upload.single("file"), async (req, res) => {
     res.json({ ok: true, resultados });
 
   } catch (error) {
-    console.error("Error REal:" , error );
-
-    res.status(500).json({ ok: false ,
+    console.error("Error real:", error);
+    res.status(500).json({
+      ok: false,
       message: error.message
     });
   }
 });
 
 // ================================
-// 🔥 API REST donde se envia el archivo json
+// API REST (JSON)
 // ================================
 app.post("/api/auditar", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ ok: false, message: "Sin archivo" });
+      return res.status(400).json({
+        ok: false,
+        message: "Sin archivo"
+      });
     }
 
     const resultados = await procesarAuditoria(req.file.path);
@@ -179,5 +195,5 @@ app.post("/api/auditar", upload.single("file"), async (req, res) => {
 // 🚀 SERVER
 // ================================
 app.listen(process.env.PORT || 3000, () => {
-  console.log("🚀 http://localhost:3000");
+  console.log("🚀 Servidor escuchando");
 });
