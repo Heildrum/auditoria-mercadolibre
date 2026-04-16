@@ -9,9 +9,7 @@ const fs = require("fs");
 const cors = require("cors");
 const path = require("path");
 
-app.get("/__probe__", (req, res) => {
-  res.send("PROBE OK ✅");
-});
+
 
 // Node 18+ / Render: fetch nativo
 // no se necesita node-fetch
@@ -24,6 +22,9 @@ const mercadolibreRoutes = require("./routes/mercadolibre.routes");
 const authMercadoLibreRoutes =
   require("./routes/auth/mercadolibreAuth.routes");
 
+app.get("/__probe__", (req, res) => {
+  res.send("PROBE OK ✅");
+});
 const app = express();
 
 // ================================
